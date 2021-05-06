@@ -1,0 +1,18 @@
+module square_sum(
+	input wire [7:0] sig_in,
+	input wire sample_clk,
+	output reg [15:0] square
+);
+
+initial begin
+	square <= 16'b0;
+end
+
+always @ (posedge sample_clk) begin
+	square <= square + sig_in*sig_in;
+end
+
+always @ (negedge sample_clk) begin
+end
+
+endmodule

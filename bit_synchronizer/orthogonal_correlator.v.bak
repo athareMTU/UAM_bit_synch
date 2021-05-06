@@ -1,0 +1,180 @@
+/***********************************************************************\
+| Module:              refrence_correlator
+| Author:              Alex Hare
+| Last Updated:        02/11/2021
+| Function:            Preforms a correlation calculation between the 
+|                      incoming signal and the reference signal
+| Inputs:              sig_in      : The incoming signal
+| Output:              signal_out  : The result of the correlation
+| Additional comments: Largely based on Benson, B. "Design of a Low-Cost 
+|                      Underwater Acoustic Modem for Short-Range Sensor 
+|                      Networks", UC San Diego, 2010
+\***********************************************************************/
+module orthogonal_correlator(
+	input wire [7:0] sig_in,
+	input wire clk_correlator,
+	input wire clk_signSelector,
+	output reg [7:0] signal_out
+);
+reg [7:0] cnt; // Used for going through the samples
+reg [7:0] orthogonalCode [0:30];
+reg [7:0] shiftReg [0:30];
+reg start;
+reg reset;
+
+initial begin
+	cnt               = 4'b0;
+	start             = 1'b0;
+	// Because the shift register takes the numbers in
+	// the front, so in order match the reference code
+	// is also reversed
+	orthogonalCode[0]  = 8'd1;
+	orthogonalCode[1]  = -8'd1;
+	orthogonalCode[2]  = 8'd1;
+	orthogonalCode[3]  = -8'd1;
+	orthogonalCode[4]  = 8'd1;
+	orthogonalCode[5]  = 8'd1;
+	orthogonalCode[6]  = 8'd1;
+	orthogonalCode[7]  = 8'd1;
+	orthogonalCode[8]  = 8'd1;
+	orthogonalCode[9]  = -8'd1;
+	orthogonalCode[10] = -8'd1;
+	orthogonalCode[11] = 8'd1;
+	orthogonalCode[12] = 8'd1;
+	orthogonalCode[13] = -8'd1;
+	orthogonalCode[14] = 8'd1;
+	orthogonalCode[15] = -8'd1;
+	orthogonalCode[16] = -8'd1;
+	orthogonalCode[17] = -8'd1;
+	orthogonalCode[18] = 8'd1;
+	orthogonalCode[19] = 8'd1;
+	orthogonalCode[20] = -8'd1;
+	orthogonalCode[21] = 8'd1;
+	orthogonalCode[22] = 8'd1;
+	orthogonalCode[23] = -8'd1;
+	orthogonalCode[24] = 8'd1;
+	orthogonalCode[25] = 8'd1;
+	orthogonalCode[26] = 8'd1;
+	orthogonalCode[27] = 8'd1;
+	orthogonalCode[28] = 8'd1;
+	orthogonalCode[29] = -8'd1;
+	orthogonalCode[30] = 8'd1;
+	
+	shiftReg[0] = 8'd0;
+	shiftReg[1] = 8'd0;
+	shiftReg[2] = 8'd0;
+	shiftReg[3] = 8'd0;
+	shiftReg[4] = 8'd0;
+	shiftReg[5] = 8'd0;
+	shiftReg[6] = 8'd0;
+	shiftReg[7] = 8'd0;
+	shiftReg[8] = 8'd0;
+	shiftReg[9] = 8'd0;
+	shiftReg[10] = 8'd0;
+	shiftReg[11] = 8'd0;
+	shiftReg[12] = 8'd0;
+	shiftReg[13] = 8'd0;
+	shiftReg[14] = 8'd0;
+	shiftReg[15] = 8'd0;
+	shiftReg[16] = 8'd0;
+	shiftReg[17] = 8'd0;
+	shiftReg[18] = 8'd0;
+	shiftReg[19] = 8'd0;
+	shiftReg[20] = 8'd0;
+	shiftReg[21] = 8'd0;
+	shiftReg[22] = 8'd0;
+	shiftReg[23] = 8'd0;
+	shiftReg[24] = 8'd0;
+	shiftReg[25] = 8'd0;
+	shiftReg[26] = 8'd0;
+	shiftReg[27] = 8'd0;
+	shiftReg[28] = 8'd0;
+	shiftReg[29] = 8'd0;
+	shiftReg[30] = 8'd0;
+end
+
+wire [7:0] result;
+reg sigSelResult [0:3];
+
+sign_selector signSel(
+	.in  (shiftReg[cnt]),
+	.ref (orthogonalCode[cnt]),
+	.clk (clk_signSelector),
+	.rst (reset),
+	.stored (result)
+);
+
+//sign_selector signSel(
+//	.in  (sig_in[cnt]),
+//	.ref (referenceCode[cnt]),
+//	.clk (clk_signSelector),
+//	.out (result[1])
+//);
+
+always @ (posedge clk_correlator) begin
+	start        <= 1'b1;
+
+	shiftReg[0]  <= sig_in;
+	shiftReg[1]  <= shiftReg[0];
+	shiftReg[2]  <= shiftReg[1];
+	shiftReg[3]  <= shiftReg[2];
+	shiftReg[4]  <= shiftReg[3];
+	shiftReg[5]  <= shiftReg[4];
+	shiftReg[6]  <= shiftReg[5];
+	shiftReg[7]  <= shiftReg[6];
+	shiftReg[8]  <= shiftReg[7];
+	shiftReg[9]  <= shiftReg[8];
+	shiftReg[10] <= shiftReg[9];
+	shiftReg[11] <= shiftReg[10];
+	shiftReg[12] <= shiftReg[11];
+	shiftReg[13] <= shiftReg[12];
+	shiftReg[14] <= shiftReg[13];
+	shiftReg[15] <= shiftReg[14];
+	shiftReg[16] <= shiftReg[15];
+	shiftReg[17] <= shiftReg[16];
+	shiftReg[18] <= shiftReg[17];
+	shiftReg[19] <= shiftReg[18];
+	shiftReg[20] <= shiftReg[19];
+	shiftReg[21] <= shiftReg[20];
+	shiftReg[22] <= shiftReg[21];
+	shiftReg[23] <= shiftReg[22];
+	shiftReg[24] <= shiftReg[23];
+	shiftReg[25] <= shiftReg[24];
+	shiftReg[26] <= shiftReg[25];
+	shiftReg[27] <= shiftReg[26];
+	shiftReg[28] <= shiftReg[27];
+	shiftReg[29] <= shiftReg[28];
+	shiftReg[30] <= shiftReg[29];
+	
+end
+
+always @ (negedge clk_correlator) begin
+	
+end
+
+always @ (posedge clk_signSelector) begin
+	// This will have to send the 31 bits to the signal selector in the
+	// amount of time that it will take one bit to enter the shift register.
+	// This way all 31 bits must be calculated before a new set of 31 bits
+	// arrive
+	signal_out <= result;// + result[1];
+end
+
+always @ (negedge clk_signSelector) begin
+	// This will have to send the 31 bits to the signal selector in the
+	// amount of time that it will take one bit to enter the shift register.
+	// This way all 31 bits must be calculated before a new set of 31 bits
+	// arrive
+	if( start == 1'b1) begin
+		if(cnt < 8'd30) begin
+			reset <= 1'b0;
+			cnt   <= cnt + 4'b1; // cnt will count up to  and then roll over
+		end else begin
+			cnt   <= 4'b0;
+			reset <= 1'b1;
+		end
+	end
+end
+
+
+endmodule
